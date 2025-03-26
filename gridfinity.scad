@@ -99,7 +99,7 @@ module gridfinity_bin_middle(
     x,
     y,
     h,
-    lip_style="stacking", //TODO
+    lip_style="normal", //TODO
     label_style="none", //TODO
     wall_thickness=0.95,
     center,
@@ -108,10 +108,19 @@ module gridfinity_bin_middle(
     orient=UP
 ) {
     bin_size = [ x*GF_SIZE-GF_TOLERANCE , y*GF_SIZE-GF_TOLERANCE ];
+    lip_thick = 5.2/2;
+    wtv = [2*wall_thickness, 2*wall_thickness];
+    wtvp = [2*lip_thick, 2*lip_thick];
+    deltav = [0.001, 0.001];
     middle_h = (h-1)*GF_HUNIT;
     attachable(anchor=anchor, spin=spin, orient=orient, size=[bin_size[0], bin_size[1], middle_h]){
         zmove(-middle_h/2)
-        rect_tube(size=bin_size, wall=wall_thickness, height = middle_h, rounding=4, anchor=BOTTOM);
+        //main walls
+        rect_tube(size=bin_size, wall=wall_thickness, height = middle_h, rounding=4, anchor=BOTTOM)
+        if (lip_style=="normal") {
+            position(TOP)
+            rect_tube(size1=bin_size-wtv, size2=bin_size-wtv, isize1=bin_size-wtvp, isize2=bin_size-wtv-deltav, h=lip_thick-wall_thickness, rounding=4, irounding2=4, irounding1=1.85, anchor=BOTTOM, orient=DOWN);
+        };
         children();
     }
 };
@@ -146,6 +155,6 @@ module gridfinity_bin_lip(
   }
 
 diff() {
-    gridfinity_bin(2,1,9);
+    ! gridfinity_bin(1,1,2);
     tag("remove") cuboid(size=[50,50,150]);
 }
