@@ -1,58 +1,151 @@
 include <BOSL2/std.scad>
 $fn=100;
 
-tolerance=0.5;
+GF_TOLERANCE=0.5;
+GF_SIZE=42.0;
+GF_HUNIT=7.0;
 
 module gridfinity_bin(
     x,
     y,
     h,
-    magnets=false,
-    stacking_lip=true
-) {};
-
-module gridfinity_bin_lip(
+    magnets="none",
+    lip_style="stacking",
     center,
     anchor,
     spin=0,
     orient=UP
-  ){
-    attachable(anchor=anchor, spin=spin, orient=orient, size=[41.5, 41.5, 4.4]){
-        zmove(-2.2)
-        rect_tube(size1=[41.5,41.5], size2=[41.5, 41.5], isize1=[36.3, 36.3], isize2=[37.7,37.7], h=0.7, rounding=4, irounding1=1.15, irounding2=1.85, anchor=BOTTOM)
-
+) {
+    bin_size = [ x*GF_SIZE-GF_TOLERANCE , y*GF_SIZE-GF_TOLERANCE ];
+    attachable(anchor=anchor, spin=spin, orient=orient, size=[bin_size[0], bin_size[1], GF_HUNIT]){
+        gridfinity_bin_bottom_connects(x,y,anchor=BOTTOM)
         position(TOP)
-        rect_tube(size=[41.5,41.5], isize=[37.7, 37.7], h=1.8, rounding=4, irounding=1.85, anchor=BOTTOM)
+        gridfinity_bin_bottom_plate(x,y, orient=UP, anchor=BOTTOM)
         position(TOP)
-        rect_tube(size1=[41.5,41.5], size2=[41.5, 41.5], isize1=[37.7,37.7], isize2=[41.49, 41.49], h=1.9, rounding=4, irounding1=1.85, irounding2=4, anchor=BOTTOM)
-        ;
+        gridfinity_bin_middle(x,y,h, orient=UP, anchor=BOTTOM)
+        position(TOP)
+        gridfinity_bin_lip(x,y,h, orient=UP, anchor=BOTTOM);
+        children();
+    }
+};
+module gridfinity_bin_bottom_plate(
+    x,
+    y,
+    h=1,
+    center,
+    anchor,
+    spin=0,
+    orient=UP
+){
+    bottom_plate_size = [ x*GF_SIZE-GF_TOLERANCE , y*GF_SIZE-GF_TOLERANCE ];
+    bottom_plate_h = h*GF_HUNIT - ( 0.8 + 1.8 + 2.15 );
+    attachable(anchor=anchor, spin=spin, orient=orient, size=[bottom_plate_size[0], bottom_plate_size[1], bottom_plate_h]){
+        zmove(-bottom_plate_h/2)
+        prismoid(size1=bottom_plate_size, size2=bottom_plate_size,  h=bottom_plate_h, rounding=4, anchor=BOTTOM);
         children();
     };
-  }
+    
+}
 
-module gridfinity_bin_bottom(
-    magnets=false,
+module gridfinity_bin_bottom_connects(
+    x,
+    y,
+    magnets_style="none",
+    center,
+    anchor,
+    spin=0,
+    orient=UP
+){
+    bin_size = [ x*GF_SIZE-GF_TOLERANCE , y*GF_SIZE-GF_TOLERANCE ];
+    bottom_connects = 0.8 + 1.8 + 2.15;
+    attachable(anchor=anchor, spin=spin, orient=orient, size=[bin_size[0], bin_size[1], bottom_connects]){
+        zmove(-bottom_connects/2)
+        grid_copies(spacing=GF_SIZE, n=[x,y])
+        gridfinity_bin_bottom_connect(anchor=BOTTOM);
+        children();
+    }
+}
+
+module gridfinity_bin_bottom_connect(
+    magnets_layout=[false, false, false, false],
+    magnets_r=6.0,
+    magnets_h=2.0,
+    screw_layout=[false, false, false, false],
+    screw_r=3.0,
+    screw_h=3.0,
     center,
     anchor,
     spin=0,
     orient=UP
   ){
-    attachable(anchor=anchor, spin=spin, orient=orient, size=[41.5, 41.5, 7.0]){
-        zmove(-3.5)
-        prismoid(size1=[35.6, 35.6], size2=[37.2, 37.2], h=0.8, rounding1=1.15, rounding2=1.85)
+    size1s = [ 35.6, 37.2, 37.2 ];
+    size2s = [ 37.2, 37.2, 41.5 ];
+    hs = [ 0.8, 1.8, 2.15 ];
+    r1s = [ 1.15, 1.85, 1.85 ];
+    r2s = [ 1.85, undef, 4.0 ];
+    bottom_connect_h = hs[0] + hs[1] + hs[2]; 
+    attachable(anchor=anchor, spin=spin, orient=orient, size=[size2s[2], size2s[2], bottom_connect_h]){
+        zmove(-(bottom_connect_h/2))
+        prismoid(size1=[size1s[0], size1s[0]], size2=[size2s[0], size2s[0]], h=hs[0], rounding1=r1s[0], rounding2=r2s[0])
         position(TOP)
-        prismoid(size1=[37.2, 37.2], size2=[37.2,37.2], h=1.8, rounding=1.85, anchor=BOTTOM)
+        prismoid(size1=[size1s[1], size1s[1]], size2=[size2s[1], size2s[1]], h=hs[1], rounding=r1s[1])
         position(TOP)
-        prismoid(size1=[37.2, 37.2], size2=[41.5, 41.5], h=2.15, rounding1=1.85, rounding2=4, anchor=BOTTOM)
-        position(TOP)
-        prismoid(size1=[41.5,41.5], size2=[41.5, 41.5], h=2.25, rounding=4, anchor=BOTTOM);
+        prismoid(size1=[size1s[2], size1s[2]], size2=[size2s[2], size2s[2]], h=hs[2], rounding1=r1s[2], rounding2=r2s[2]);
         children();
     };
 }
 
-gridfinity_bin_bottom(anchor=BOTTOM)
-position(TOP)
-rect_tube(size=41.5, wall=0.95, height = 7.0*1, rounding=4, anchor=BOTTOM)
-position(TOP)
-gridfinity_bin_lip(anchor=BOTTOM);
+module gridfinity_bin_middle(
+    x,
+    y,
+    h,
+    lip_style="stacking", //TODO
+    label_style="none", //TODO
+    wall_thickness=0.95,
+    center,
+    anchor,
+    spin=0,
+    orient=UP
+) {
+    bin_size = [ x*GF_SIZE-GF_TOLERANCE , y*GF_SIZE-GF_TOLERANCE ];
+    middle_h = (h-1)*GF_HUNIT;
+    attachable(anchor=anchor, spin=spin, orient=orient, size=[bin_size[0], bin_size[1], middle_h]){
+        zmove(-middle_h/2)
+        rect_tube(size=bin_size, wall=wall_thickness, height = middle_h, rounding=4, anchor=BOTTOM);
+        children();
+    }
+};
 
+module gridfinity_bin_lip(
+    x,
+    y,
+    h,
+    lip_style="normal",
+    center,
+    anchor,
+    spin=0,
+    orient=UP
+  ){
+    bin_size = [ x*GF_SIZE-GF_TOLERANCE , y*GF_SIZE-GF_TOLERANCE ];
+    isize1s = [ -5.2, -3.8, -3.8 ];
+    isize2s = [ -3.8, undef, -0.01 ];
+    hs = [ 0.7, 1.8, 1.9];
+    lip_h = 4.4;
+    r1s = [ 1.15, 1.85, 1.85 ];
+    r2s = [ 1.85, undef, 4.0 ];
+    bottom_connect_h = hs[0] + hs[1] + hs[2]; 
+    attachable(anchor=anchor, spin=spin, orient=orient, size=[bin_size[0], bin_size[1], lip_h]){
+        zmove(-lip_h/2)
+        rect_tube(size1=bin_size, size2=bin_size, isize1=bin_size+[isize1s[0], isize1s[0]], isize2=bin_size+[isize2s[0],isize2s[0]], h=hs[0], rounding=4, irounding1=r1s[0], irounding2=r2s[0], anchor=BOTTOM)
+        position(TOP)
+        rect_tube(size=bin_size, isize=bin_size+[isize1s[1],isize1s[1]], h=hs[1], rounding=4, irounding=r1s[1], anchor=BOTTOM)
+        position(TOP)
+        rect_tube(size1=bin_size, size2=bin_size, isize1=bin_size+[isize1s[2], isize1s[2]], isize2=bin_size+[isize2s[2],isize2s[2]], h=hs[2], rounding=4, irounding1=r1s[2], irounding2=r2s[2], anchor=BOTTOM);
+        children();
+    };
+  }
+
+diff() {
+    gridfinity_bin(2,1,9);
+    tag("remove") cuboid(size=[50,50,150]);
+}
