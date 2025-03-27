@@ -10,9 +10,9 @@ module gridfinity_bin(
     y, //depth in units of the bin
     h, //height in units of the bin
     extra_piece_direction=CENTER, //if there are fractional pieces which direction is it put, CENTER==None
-    magnets="none", //magnets configuration: "none", "normal", "corners"
-    lip="normal", //how the lip on top works: "none", "normal" 
-    middle="normal", //how the center is, "normal", "solid", "label", "label_scoop"
+    magnets="none", //magnets configuration: "none", "default", "corners"
+    lip="default", //how the lip on top works: "none", "default" 
+    middle="default", //how the center is, "default", "solid", "label", "label_scoop"
     wall_thickness=0.95, //the thickness of walls
     center, //attachable param
     anchor,
@@ -102,8 +102,8 @@ module gridfinity_bin_middle(
     x,
     y,
     h,
-    lip="normal", //TODO
-    middle="normal",
+    lip="default", //TODO
+    middle="default",
     wall_thickness=0.95,
     center,
     anchor,
@@ -119,11 +119,11 @@ module gridfinity_bin_middle(
     attachable(anchor=anchor, spin=spin, orient=orient, size=[bin_size[0], bin_size[1], middle_h]){
         zmove(-middle_h/2)
         //main walls
-        if (middle=="normal") {
+        if (middle=="default") {
             rect_tube(size=bin_size, wall=wall_thickness, height = middle_h, rounding=4, anchor=BOTTOM)
-            if (lip=="normal") {
+            if (lip=="default") {
                 position(TOP)
-                rect_tube(size1=bin_size-wtv, size2=bin_size-wtv, isize1=bin_size-wtvp, isize2=bin_size-wtv-deltav, h=lip_thick-wall_thickness, rounding=4, irounding2=4, irounding1=1.85, anchor=BOTTOM, orient=DOWN);
+                rect_tube(size1=bin_size-wtv, size2=bin_size-wtv, isize1=bin_size-wtvp, isize2=bin_size-wtv-deltav, h=lip_thick-wall_thickness, rounding=4, irounding2=4, irounding1=1.15, anchor=BOTTOM, orient=DOWN);
             };
         } else if (middle=="solid"){
             prismoid(size1=bin_size, size2=bin_size, height=middle_h, rounding=4, anchor=BOTTOM);
@@ -136,7 +136,7 @@ module gridfinity_bin_lip(
     x,
     y,
     h,
-    lip="normal",
+    lip="default",
     center,
     anchor,
     spin=0,
@@ -160,5 +160,3 @@ module gridfinity_bin_lip(
         children();
     };
   }
-
-gridfinity_bin(2,2,15, middle="normal");
