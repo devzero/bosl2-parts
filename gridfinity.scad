@@ -6,12 +6,15 @@ GF_SIZE=42.0;
 GF_HUNIT=7.0;
 
 module gridfinity_bin(
-    x,
-    y,
-    h,
-    magnets="none",
-    lip_style="stacking",
-    center,
+    x, //width in units of the bin, non-integers are an extra piece
+    y, //depth in units of the bin
+    h, //height in units of the bin
+    extra_piece_direction=CENTER, //if there are fractional pieces which direction is it put, CENTER==None
+    magnets="none", //magnets configuration: "none", "normal", "corners"
+    lip="normal", //how the lip on top works: "none", "normal" 
+    middle="normal", //how the center is, "normal", "solid", "label", "label_scoop"
+    wall_thickness=0.95, //the thickness of walls
+    center, //attachable param
     anchor,
     spin=0,
     orient=UP
@@ -22,7 +25,7 @@ module gridfinity_bin(
         position(TOP)
         gridfinity_bin_bottom_plate(x,y, orient=UP, anchor=BOTTOM)
         position(TOP)
-        gridfinity_bin_middle(x,y,h, orient=UP, anchor=BOTTOM)
+        gridfinity_bin_middle(x,y,h, lip=lip, middle=middle, orient=UP, anchor=BOTTOM)
         position(TOP)
         gridfinity_bin_lip(x,y,h, orient=UP, anchor=BOTTOM);
         children();
@@ -99,8 +102,8 @@ module gridfinity_bin_middle(
     x,
     y,
     h,
-    lip_style="normal", //TODO
-    label_style="none", //TODO
+    lip="normal", //TODO
+    middle="normal",
     wall_thickness=0.95,
     center,
     anchor,
@@ -116,11 +119,15 @@ module gridfinity_bin_middle(
     attachable(anchor=anchor, spin=spin, orient=orient, size=[bin_size[0], bin_size[1], middle_h]){
         zmove(-middle_h/2)
         //main walls
-        rect_tube(size=bin_size, wall=wall_thickness, height = middle_h, rounding=4, anchor=BOTTOM)
-        if (lip_style=="normal") {
-            position(TOP)
-            rect_tube(size1=bin_size-wtv, size2=bin_size-wtv, isize1=bin_size-wtvp, isize2=bin_size-wtv-deltav, h=lip_thick-wall_thickness, rounding=4, irounding2=4, irounding1=1.85, anchor=BOTTOM, orient=DOWN);
-        };
+        if (middle=="normal") {
+            rect_tube(size=bin_size, wall=wall_thickness, height = middle_h, rounding=4, anchor=BOTTOM)
+            if (lip=="normal") {
+                position(TOP)
+                rect_tube(size1=bin_size-wtv, size2=bin_size-wtv, isize1=bin_size-wtvp, isize2=bin_size-wtv-deltav, h=lip_thick-wall_thickness, rounding=4, irounding2=4, irounding1=1.85, anchor=BOTTOM, orient=DOWN);
+            };
+        } else if (middle=="solid"){
+            prismoid(size1=bin_size, size2=bin_size, height=middle_h, rounding=4, anchor=BOTTOM);
+        }
         children();
     }
 };
@@ -129,7 +136,7 @@ module gridfinity_bin_lip(
     x,
     y,
     h,
-    lip_style="normal",
+    lip="normal",
     center,
     anchor,
     spin=0,
@@ -154,7 +161,4 @@ module gridfinity_bin_lip(
     };
   }
 
-diff() {
-    ! gridfinity_bin(1,1,2);
-    tag("remove") cuboid(size=[50,50,150]);
-}
+gridfinity_bin(2,2,15, middle="normal");
