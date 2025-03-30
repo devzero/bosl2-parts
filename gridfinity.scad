@@ -60,11 +60,31 @@ module gridfinity_bin_bottom_connects(
     orient=UP
 ){
     bin_size = [ x*GF_SIZE-GF_TOLERANCE , y*GF_SIZE-GF_TOLERANCE ];
+    x_frac = x-floor(x);
+    y_frac = y-floor(y);
+    frac_shift = [x_frac*GF_SIZE - GF_TOLERANCE, y_frac*GF_SIZE - GF_TOLERANCE];
     bottom_connects = 0.8 + 1.8 + 2.15;
     attachable(anchor=anchor, spin=spin, orient=orient, size=[bin_size[0], bin_size[1], bottom_connects]){
-        zmove(-bottom_connects/2)
-        grid_copies(spacing=GF_SIZE, n=[x,y])
-        gridfinity_bin_bottom_connect(anchor=BOTTOM);
+        diff() {
+            move([-frac_shift[0]/2, -frac_shift[1]/2, -bottom_connects/2])
+            grid_copies(spacing=GF_SIZE, n=[floor(x),floor(y)])
+            gridfinity_bin_bottom_connect(anchor=BOTTOM);
+            if (x_frac>0.01) {
+                move([(bin_size[0]-frac_shift[0])/2,-frac_shift[1]/2,-bottom_connects/2])
+                ycopies(spacing=GF_SIZE, n=floor(y))
+                gridfinity_bin_bottom_connect(xscale=x_frac,anchor=BOTTOM);
+            }
+            if (y_frac>0.01) {
+                move([-frac_shift[0]/2, (bin_size[1]-frac_shift[1])/2,-bottom_connects/2])
+                xcopies(spacing=GF_SIZE, n=floor(x))
+                gridfinity_bin_bottom_connect(yscale=y_frac,anchor=BOTTOM);
+            }
+            if ((x_frac>0.01) && (y_frac>0.01)) {
+                move([(bin_size[0]-frac_shift[0])/2, (bin_size[1]-frac_shift[1])/2,-bottom_connects/2])
+                gridfinity_bin_bottom_connect(xscale=x_frac, yscale=y_frac, anchor=BOTTOM);
+
+            }
+        };
         children();
     }
 }
@@ -76,24 +96,31 @@ module gridfinity_bin_bottom_connect(
     screw_layout=[false, false, false, false],
     screw_r=3.0,
     screw_h=3.0,
+    xscale=1,
+    yscale=1,
     center,
     anchor,
     spin=0,
     orient=UP
   ){
-    size1s = [ 35.6, 37.2, 37.2 ];
-    size2s = [ 37.2, 37.2, 41.5 ];
+    size=[xscale*GF_SIZE,yscale*GF_SIZE];
+    // size1s = [ 35.6, 37.2, 37.2 ];
+    xsize1s = [ size[0]-6.4, size[0]-4.8, size[0]-4.8];
+    ysize1s = [ size[1]-6.4, size[1]-4.8, size[1]-4.8];
+    // size2s = [ 37.2, 37.2, 41.5 ];
+    xsize2s = [ size[0]-4.8, size[0]-4.8, size[0]-0.5];
+    ysize2s = [ size[1]-4.8, size[1]-4.8, size[1]-0.5];
     hs = [ 0.8, 1.8, 2.15 ];
     r1s = [ 1.15, 1.85, 1.85 ];
     r2s = [ 1.85, undef, 4.0 ];
     bottom_connect_h = hs[0] + hs[1] + hs[2]; 
-    attachable(anchor=anchor, spin=spin, orient=orient, size=[size2s[2], size2s[2], bottom_connect_h]){
+    attachable(anchor=anchor, spin=spin, orient=orient, size=[xsize2s[2], ysize2s[2], bottom_connect_h]){
         zmove(-(bottom_connect_h/2))
-        prismoid(size1=[size1s[0], size1s[0]], size2=[size2s[0], size2s[0]], h=hs[0], rounding1=r1s[0], rounding2=r2s[0])
+        prismoid(size1=[xsize1s[0], ysize1s[0]], size2=[xsize2s[0], ysize2s[0]], h=hs[0], rounding1=r1s[0], rounding2=r2s[0])
         position(TOP)
-        prismoid(size1=[size1s[1], size1s[1]], size2=[size2s[1], size2s[1]], h=hs[1], rounding=r1s[1])
+        prismoid(size1=[xsize1s[1], ysize1s[1]], size2=[xsize2s[1], ysize2s[1]], h=hs[1], rounding=r1s[1])
         position(TOP)
-        prismoid(size1=[size1s[2], size1s[2]], size2=[size2s[2], size2s[2]], h=hs[2], rounding1=r1s[2], rounding2=r2s[2]);
+        prismoid(size1=[xsize1s[2], ysize1s[2]], size2=[xsize2s[2], ysize2s[2]], h=hs[2], rounding1=r1s[2], rounding2=r2s[2]);
         children();
     };
 }
