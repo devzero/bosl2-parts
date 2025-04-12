@@ -1,5 +1,4 @@
 include <BOSL2/std.scad>
-$fn=100;
 
 GF_TOLERANCE=0.5;
 GF_SIZE=42.0;
