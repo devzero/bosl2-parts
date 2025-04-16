@@ -1,6 +1,7 @@
 # bosl2-libs
 
-A BOSL2-based OpenSCAD Library for common parts not covered in the original BOSL2 library
+A [BOSL2](https://github.com/BelfrySCAD/BOSL2)-based OpenSCAD Library for common parts not covered in the original BOSL2 library
+
 
 All modules produce attachable BOSL2 objects and take standard attachable parameters (anchor, spin, orient).  Instead of having many global variables, module constructors are the only inputs, with reasonable defaults, and hopefully simpler designs.
 

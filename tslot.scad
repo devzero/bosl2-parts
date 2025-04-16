@@ -50,18 +50,18 @@ module net8020_2020_profile(center_hole=false){
 
 
 module tslot(
+	length, //length of bar in mm
 	profile="2020", //[1010, 1515, 2020, 2040, 2060, 3030, 4040, 5050, 6060]
 	vendor="8020", //[8020, tnutz, bosch, misumi, openbeam]
-	length, //length of bar in mm
-	tolerance=0, //additional tolerance for negative extrusions
+	clearance=0, //additional size for negative extrusions
 	center_hole=false, //whether to include inner holes (not useful for negatives)
 	anchor,
 	spin,
 	orient
 ){
 	profile_size = tslot_profile_size(vendor, profile);
-	size=[profile_size[0]+2*tolerance,profile_size[1]+2*tolerance];
-	attachable(anchor, spin, orient, size=[size[0], size[1], length+2*tolerance]){
+	size=[profile_size[0]+2*clearance,profile_size[1]+2*clearance];
+	attachable(anchor, spin, orient, size=[size[0], size[1], length+2*clearance]){
 		minkowski() {
 			linear_extrude(height=length, center=true, convexity=10) {
 				if (vendor=="8020") {
@@ -80,9 +80,8 @@ module tslot(
 						assert(true, "profile not yet implemented");
 				};
 			};
-			sphere(r=tolerance);
+			sphere(r=clearance);
 		};
 		children();
 	}
 };
-
